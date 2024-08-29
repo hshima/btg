@@ -1,0 +1,77 @@
+networks:
+  local_pgnet:
+    driver: bridge
+volumes:
+  pg_data_volume:
+#  pg_export_volume:
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: 'rabbitmq:3.13.4'
+    environment:
+      - 'RABBITMQ_DEFAULT_PASS=secret'
+      - 'RABBITMQ_DEFAULT_USER=myuser'
+    ports:
+      - '5672:5672'
+  postgresDb:
+    container_name: pg_server
+    image: 'postgres:16.3-bullseye'
+    ports:
+      - '5432:5432'
+    restart: always
+    # set shared memory limit when using docker-compose
+#    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    volumes:
+#      - type: tmpfs
+#        target: /dev/shm
+#        tmpfs:
+#          size: 134217728 # 128*2^20 bytes = 128Mb
+#      - type: volume
+#        target: pg_data_volume
+#      - type: volume
+#        target: pg_export_volume
+      - pg_data_volume:/var/lib/postgresql/data
+#      - pg_export_volume
+    environment:
+      POSTGRES_PASSWORD: ${pg_password}
+    healthcheck:
+      test: [ "CMD", "pg_isready -U postgres" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    networks:
+      - local_pgnet
+#  flyway:
+#    image: boxfuse/flyway:5-alpine
+#    command: -url=jdbc:postgresql://postgres:5432/postgres -schemas=public -user=postgres -password=123456 migrate
+#    volumes:
+#      - ./migration:/flyway/sql
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#  pg_client:
+#    container_name: pg_client
+##    image: btg-pg_client
+##    command: "psql postgresql://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_database} -c 'select * from pg_catalog.pg_tables'"
+#    environment:
+#      PGDATABASE: ${pg_database}
+#      PGHOST: ${pg_host}
+#      PGPORT: ${pg_port}
+#      PGUSER: ${pg_user}
+#      PGPASSWORD: ${pg_password}
+#    build:
+#      context: ./postgres
+#      dockerfile: PgClientDockerfile
+#    depends_on:
+#      postgresDb:
+#        condition: service_healthy
+#    networks:
+#      - local_pgnet
+  adminer:
+    image: 'adminer:4.8.1'
+    restart: always
+    ports:
+      - '9000:8080'
+#  app:
+#    image: ''

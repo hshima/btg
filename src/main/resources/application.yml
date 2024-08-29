@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: btg
+  datasource:
+    url : 'jdbc:postgresql://localhost:5432/desafio_btg?connect_timeout=10&application_name=btg'
+#    url : 'jdbc:postgresql://host.containers.internal:5432/desafio_btg?connect_timeout=10&application_name=btg'
+    username: 'postgres'
+    password: '123456'
+    initialization-mode: always
+    initialize: true
+#    schema: classpath:/schema.sql
+    continue-on-error: true
+  jpa:
+#    properties:
+#      hibernate:
+#        dialect: 'org.hibernate.dialect.PostgreSQLDialect'
+    hibernate:
+      ddl-auto: 'none'
+      show-sql: true
+      transaction:
+        jta:
+          platform:
+  flyway:
+    locations: 'classpath:db/migration'
+    enabled: true
+    baseline-on-migrate: true
+    database-name: 'btg'
+  devtools:
+    add-properties: false
+  data:
+    jdbc:
+      repositories:
+        enabled: false
+logging:
+  level:
+    web: DEBUG
